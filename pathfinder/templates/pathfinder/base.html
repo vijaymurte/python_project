@@ -1,0 +1,42 @@
+<!-- pathfinder/templates/pathfinder/base.html -->
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ShortPath{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'pathfinder/css/style.css' %}">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="{% url 'index' %}" class="brand">🗺️ ShortPath</a>
+        <div class="nav-links">
+            <a href="{% url 'index' %}">Home</a>
+            <a href="{% url 'add_city' %}">Add City</a>
+            <a href="{% url 'add_edge' %}">Add Road</a>
+            <a href="{% url 'history' %}">History</a>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="message {{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+
+    </div>
+
+</body>
+</html>

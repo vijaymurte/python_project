@@ -1,0 +1,43 @@
+<!-- pathfinder/templates/pathfinder/history.html -->
+
+{% extends 'pathfinder/base.html' %}
+
+{% block title %}ShortPath — History{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>🕘 Recent Searches</h1>
+
+    {% if searches %}
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Path</th>
+                        <th>Distance</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for search in searches %}
+                        <tr>
+                            <td><strong>{{ search.source.name }}</strong></td>
+                            <td><strong>{{ search.destination.name }}</strong></td>
+                            <td style="color: #555;">{{ search.path_json|join:" → " }}</td>
+                            <td><span class="distance-badge" style="font-size:13px; padding: 5px 14px;">{{ search.total_distance }} km</span></td>
+                            <td style="color: #888; font-size: 13px;">{{ search.searched_at|date:"d M Y, H:i" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <p>No searches yet. Start by finding a path.</p>
+            <a href="{% url 'index' %}" class="btn">Find a Route</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

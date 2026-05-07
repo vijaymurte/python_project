@@ -1,0 +1,70 @@
+<!-- pathfinder/templates/pathfinder/index.html -->
+
+{% extends 'pathfinder/base.html' %}
+
+{% block title %}ShortPath — Find Route{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>🔍 Find Shortest Path</h1>
+
+    <form method="POST" action="{% url 'find_path' %}">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="{{ form.source.id_for_label }}">{{ form.source.label }}</label>
+            {{ form.source }}
+            {% if form.source.errors %}
+                <ul class="errorlist">
+                    {% for error in form.source.errors %}<li>{{ error }}</li>{% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.destination.id_for_label }}">{{ form.destination.label }}</label>
+            {{ form.destination }}
+            {% if form.destination.errors %}
+                <ul class="errorlist">
+                    {% for error in form.destination.errors %}<li>{{ error }}</li>{% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn">Find Path →</button>
+    </form>
+
+    <p class="hint" style="margin-top: 20px;">⚡ Powered by Dijkstra's Algorithm</p>
+</div>
+
+<!-- All Cities Map -->
+<div class="card">
+    <h1>🗺️ City Network</h1>
+    <p style="font-size:14px; color:#888; margin-bottom: 16px; margin-top: -16px;">All cities currently in the system</p>
+    <div id="map" style="height: 500px; border-radius: 10px; z-index: 1;"></div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    const allCities = {{ all_cities_json|safe }};
+
+    const map = L.map('map').setView([20.5937, 78.9629], 5);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    allCities.forEach(function(city) {
+        L.circleMarker([city.lat, city.lng], {
+            radius      : 7,
+            fillColor   : '#1a73e8',
+            color       : 'white',
+            weight      : 2,
+            opacity     : 1,
+            fillOpacity : 0.9
+        }).addTo(map).bindPopup(`<strong>${city.name}</strong><br>${city.state}`);
+    });
+</script>
+{% endblock %}

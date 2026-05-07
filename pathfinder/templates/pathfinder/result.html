@@ -1,0 +1,110 @@
+<!-- pathfinder/templates/pathfinder/result.html -->
+
+{% extends 'pathfinder/base.html' %}
+
+{% block title %}ShortPath — Result{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom: 24px;">
+    <h1>Shortest Route Found</h1>
+
+    <p style="font-size: 15px; color: #555; margin-bottom: 20px;">
+        <strong>{{ source }}</strong> → <strong>{{ destination }}</strong>
+    </p>
+
+    <div class="path-steps">
+        {% for city in path %}
+            <span class="path-city">{{ city }}</span>
+            {% if not forloop.last %}
+                <span class="path-arrow">→</span>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <p style="margin-top: 16px; font-size: 14px; color: #555;">Total Distance</p>
+    <span class="distance-badge">{{ distance }} km</span>
+
+    <div style="margin-top: 28px;">
+        <a href="{% url 'index' %}" class="btn btn-secondary">← Search Again</a>
+    </div>
+</div>
+
+<!-- Map Card -->
+<div class="card">
+    <h1>🗺️ Route on Map</h1>
+    <div id="map" style="height: 480px; border-radius: 10px; z-index: 1;"></div>
+</div>
+
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- City label style — MUST be outside script tag -->
+<style>
+    .city-label {
+        background   : white;
+        border       : 1.5px solid #1a73e8;
+        border-radius: 4px;
+        color        : #1a1a1a;
+        font-size    : 11px;
+        font-weight  : 600;
+        padding      : 2px 6px;
+        box-shadow   : 0 1px 4px rgba(0,0,0,0.15);
+        white-space  : nowrap;
+    }
+    .city-label::before {
+        display: none;
+    }
+</style>
+
+<script>
+    const pathCoords = {{ path_coords|safe }};
+
+    const map = L.map('map');
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    if (pathCoords.length > 0) {
+
+        const latlngs = pathCoords.map(city => [city.lat, city.lng]);
+
+        // Draw route line
+        L.polyline(latlngs, {
+            color  : '#1a73e8',
+            weight : 5,
+            opacity: 0.8
+        }).addTo(map);
+
+        // Plot each city marker
+        pathCoords.forEach(function(city, index) {
+            const isSource   = index === 0;
+            const isDest     = index === pathCoords.length - 1;
+            const isEndpoint = isSource || isDest;
+
+            const marker = L.circleMarker([city.lat, city.lng], {
+                radius      : isEndpoint ? 10 : 7,
+                fillColor   : isEndpoint ? '#d93025' : '#1a73e8',
+                color       : 'white',
+                weight      : 2,
+                fillOpacity : 1
+            }).addTo(map);
+
+            marker.bindTooltip(city.name, {
+                permanent : true,
+                direction : 'top',
+                offset    : [0, -10],
+                className : 'city-label'
+            }).addTo(map);
+
+            marker.bindPopup(
+                `<strong>${city.name}</strong><br>Stop ${index + 1} of ${pathCoords.length}`
+            );
+        });
+
+        // Fit map to full path
+        map.fitBounds(latlngs, { padding: [60, 60] });
+    }
+</script>
+{% endblock %}
